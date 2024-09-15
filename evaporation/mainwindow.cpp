@@ -35,9 +35,40 @@ MainWindow::MainWindow(QWidget *parent)
     ui->widget_4->rescaleAxes();
     ui->widget_4->replot();
 
+    ui->widget->addGraph();
+
+
+    draw_particles(ui->widget);
 }
+
+
 
 MainWindow::~MainWindow()
 {
     delete ui;
+}
+
+void MainWindow::draw_particles(QCustomPlot *p)
+{
+    std::random_device rd;
+    std::uniform_real_distribution<double> dist(0,5);
+
+    QVector<double> x(60);
+    QVector<double> y(60);
+    std::generate(x.begin(),x.end(),[&rd,&dist]{return dist(rd);});
+    std::generate(y.begin(),y.end(),[&rd,&dist]{return dist(rd);});
+
+    double w = p->xAxis->range().size();
+    double h = p->yAxis->range().size();
+
+    double scr_w = p->rect().width();
+    double scr_h = p->rect().height();
+
+    double particle_pixel_radius = 0.1 * scr_w / w;
+
+    auto g = p->graph(0);
+    g->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCircle, particle_pixel_radius));
+    g->setLineStyle(QCPGraph::lsNone);
+    g->setData(x,y,true);
+
 }
