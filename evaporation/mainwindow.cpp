@@ -37,8 +37,16 @@ MainWindow::MainWindow(QWidget *parent)
 
     ui->widget->addGraph();
 
+    m.SetInitialConditions(4,4,ui->DoubleSpinBox->value()* m.GetEquilibriumDistance());
+    m.EvaluateTimeStep();
 
-    draw_particles(ui->widget);
+    draw_particles(ui->widget,m);
+
+    draw_timer.setInterval(1000/24);
+
+    // draw_timer.connect(SIGNAL(timeout()),SLOT(timer_event()));
+    connect(&draw_timer,SIGNAL(timeout()),this,SLOT(timer_event()));
+
 }
 
 
@@ -48,15 +56,23 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-void MainWindow::draw_particles(QCustomPlot *p)
-{
-    std::random_device rd;
-    std::uniform_real_distribution<double> dist(0,5);
+void MainWindow::draw_particles(QCustomPlot *p, Model& m)
+{    
+    p->xAxis->setRange(0,30);
+    p->yAxis->setRange(0,30);
 
-    QVector<double> x(60);
-    QVector<double> y(60);
-    std::generate(x.begin(),x.end(),[&rd,&dist]{return dist(rd);});
-    std::generate(y.begin(),y.end(),[&rd,&dist]{return dist(rd);});
+    p->xAxis->setLabel(QString("iteration: " + QString::number(m.GetIteration())));
+
+    auto part = m.GetParticles();
+
+    QVector<double> x(part.size());
+    QVector<double> y(part.size());
+
+    for (auto i = 0; i < part.size(); ++i)
+    {
+        x[i] = part[i].m_x / m.GetEquilibriumDistance();
+        y[i] = part[i].m_y / m.GetEquilibriumDistance();
+    }
 
     double w = p->xAxis->range().size();
     double h = p->yAxis->range().size();
@@ -64,11 +80,56 @@ void MainWindow::draw_particles(QCustomPlot *p)
     double scr_w = p->rect().width();
     double scr_h = p->rect().height();
 
-    double particle_pixel_radius = 0.1 * scr_w / w;
-
+    double particle_pixel_radius = 1 * scr_w / w;
     auto g = p->graph(0);
     g->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCircle, particle_pixel_radius));
     g->setLineStyle(QCPGraph::lsNone);
     g->setData(x,y,true);
 
+    p->replot();
 }
+
+void MainWindow::start_simulation()
+{
+    while (true) {
+        m.Process(20);
+
+        // Qt can't draw from another thread, REMEMBER IT
+        // draw_particles(ui->widget,m);
+    }
+}
+
+void MainWindow::on_pushButton_toggled(bool checked)
+{
+
+}
+
+
+void MainWindow::on_pushButton_clicked(bool checked)
+{
+    static QFuture<void> future;
+
+    if (!checked)
+    {
+        m.SetInitialConditions(4,4,ui->DoubleSpinBox->value()* m.GetEquilibriumDistance());
+
+
+        ui->pushButton->setText("Стоп");
+        future = QtConcurrent::run([&]{start_simulation();});
+        // start_simulation();
+        draw_timer.start();
+    }
+    else
+    {
+        ui->pushButton->setText("Старт");
+        future.cancel();
+        future.waitForFinished();
+        draw_timer.stop();
+    }
+}
+
+void MainWindow::timer_event()
+{
+    draw_particles(ui->widget,m);
+}
+

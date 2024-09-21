@@ -14,6 +14,7 @@ SOURCES += \
     qcustomplot.cpp \
 
 HEADERS += \
+    evaporation.h \
     mainwindow.h \
     qcustomplot.h \
 
