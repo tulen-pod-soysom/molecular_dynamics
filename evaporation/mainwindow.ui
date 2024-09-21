@@ -91,6 +91,9 @@
     <property name="text">
      <string>Старт</string>
     </property>
+    <property name="checkable">
+     <bool>true</bool>
+    </property>
    </widget>
    <widget class="QPushButton" name="pushButton_2">
     <property name="enabled">

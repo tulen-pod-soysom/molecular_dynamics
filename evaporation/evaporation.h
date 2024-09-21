@@ -6,6 +6,7 @@
 #include <cstdint>
 #include <tuple>
 #include <vector>
+#include <mutex>
 
 struct Particle
 {
@@ -20,6 +21,7 @@ public:    // variables
     double m_aX_previous = 0;
     double m_aY_previous = 0;
     constexpr static double m_m  = 39.948 * 1.66053906660E-27;
+
 
 public:    // methods
 
@@ -48,13 +50,30 @@ private:    // variables
     constexpr static double m_sigma6 = m_sigma*m_sigma*m_sigma*m_sigma*m_sigma*m_sigma;
     constexpr static double m_depth = 0.0103 * 1.602176634E-19;
 
+    std::mutex protection_mutex;
 public:     // methods
 
     Model() = default;
 
     ~Model() = default;
 
-    auto& GetParticles() {return m_particles;}
+    auto GetParticles() {
+        std::lock_guard<std::mutex> lock(protection_mutex);
+        return m_particles;
+    }
+
+    auto GetParticlePositions()
+    {
+        std::lock_guard<std::mutex> lock(protection_mutex);
+        std::vector<double> x(m_particles.size());
+        std::vector<double> y(m_particles.size());
+        for (auto i = 0; i < m_particles.size(); ++i)
+        {
+            x[i] = m_particles[i].m_x;
+            y[i] = m_particles[i].m_y;
+        }
+        return std::make_tuple(x,y);
+    }
 
     // Равновесное расстояние
     auto GetEquilibriumDistance() {return m_equilibrium_distance;}
@@ -66,8 +85,10 @@ public:     // methods
         return std::make_tuple(x,y);
     }
 
-    void SetInitialConditions(size_t width , size_t height, double period)
+    void SetInitialConditions(int width , int height, double period)
     {
+
+        m_iter = 0;
         // purely centered grid is not beautiful if side is even
         // double center_x = int(m_spaceRight - m_spaceLeft) / 2;
         // double center_y = int(m_spaceTop - m_spaceBot) / 2;
@@ -78,8 +99,8 @@ public:     // methods
         m_particles = std::vector<Particle>(width*height);
 
         // height or width == 1 is problematic
-        for(int i = -height/2; i != height/2; ++i)
-          for (int j = -width / 2; j != width / 2; ++j) {
+        for(int i = -height/2; i <= height/2; ++i)
+          for (int j = -width / 2; j <= width / 2; ++j) {
             auto [x,y] = grid2d(i, j, period, center_x, center_y);
             m_particles[(i + height/2) * height + (j+width/2)].m_x = x;
             m_particles[(i + height/2) * height + (j+width/2)].m_y = y;
@@ -135,6 +156,7 @@ public:     // methods
     auto velocity_verlet_process(InputIt begin, InputIt end,
                                  InteractionFunc particle_interaction) 
     {
+
         // swap a_i with a_i+1
       for (auto i = begin; i != end; ++i) {
         i->m_aX_previous = i->m_aX;
@@ -143,11 +165,15 @@ public:     // methods
         i->m_aY = 0.0;
       }
 
-      for (auto i = begin; i != end - 1; ++i) {
+
+      { // defines lock's scope
+      std::lock_guard<std::mutex> lock(protection_mutex);
+      for (auto i = begin; i != end; ++i) {
         i->m_x =
             integrate_position(i->m_x, i->m_vX, i->m_aX_previous, m_timestep);
         i->m_y =
             integrate_position(i->m_y, i->m_vY, i->m_aY_previous, m_timestep);
+      }
       }
 
         double potential_energy = 0;

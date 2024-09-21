@@ -1,5 +1,6 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
+#include <thread>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -37,14 +38,12 @@ MainWindow::MainWindow(QWidget *parent)
 
     ui->widget->addGraph();
 
-    m.SetInitialConditions(4,4,ui->DoubleSpinBox->value()* m.GetEquilibriumDistance());
+    m.SetInitialConditions(5,5,ui->DoubleSpinBox->value()* m.GetEquilibriumDistance());
     m.EvaluateTimeStep();
 
     draw_particles(ui->widget,m);
 
-    draw_timer.setInterval(1000/24);
-
-    // draw_timer.connect(SIGNAL(timeout()),SLOT(timer_event()));
+    draw_timer.setInterval(1000/30);
     connect(&draw_timer,SIGNAL(timeout()),this,SLOT(timer_event()));
 
 }
@@ -63,16 +62,27 @@ void MainWindow::draw_particles(QCustomPlot *p, Model& m)
 
     p->xAxis->setLabel(QString("iteration: " + QString::number(m.GetIteration())));
 
-    auto part = m.GetParticles();
+    auto [x_,y_] = m.GetParticlePositions();
 
-    QVector<double> x(part.size());
-    QVector<double> y(part.size());
-
-    for (auto i = 0; i < part.size(); ++i)
+    QVector<double> x(x_.begin(),x_.end());
+    QVector<double> y(y_.begin(),y_.end());
+    for (auto i = 0; i < x.size(); ++i)
     {
-        x[i] = part[i].m_x / m.GetEquilibriumDistance();
-        y[i] = part[i].m_y / m.GetEquilibriumDistance();
+        x[i] /= m.GetEquilibriumDistance();
+        y[i] /= m.GetEquilibriumDistance();
     }
+
+    // auto part = m.GetParticles();
+    // QVector<double> x(part.size());
+    // QVector<double> y(part.size());
+
+    // for (auto i = 0; i < part.size(); ++i)
+    // {
+    //     x[i] = part[i].m_x / m.GetEquilibriumDistance();
+    //     y[i] = part[i].m_y / m.GetEquilibriumDistance();
+    // }
+
+
 
     double w = p->xAxis->range().size();
     double h = p->yAxis->range().size();
@@ -89,13 +99,15 @@ void MainWindow::draw_particles(QCustomPlot *p, Model& m)
     p->replot();
 }
 
-void MainWindow::start_simulation()
+void MainWindow::start_simulation(bool& running)
 {
-    while (true) {
-        m.Process(20);
+    while (running) {
+        m.Process(100);
 
         // Qt can't draw from another thread, REMEMBER IT
+        // QTimer::singleShot(0,this,SLOT(timer_event()));
         // draw_particles(ui->widget,m);
+        // std::this_thread::sleep_for(std::chrono::milliseconds(200));
     }
 }
 
@@ -108,23 +120,30 @@ void MainWindow::on_pushButton_toggled(bool checked)
 void MainWindow::on_pushButton_clicked(bool checked)
 {
     static QFuture<void> future;
+    static QTimer sim_timer;
+    sim_timer.setSingleShot(true);
 
-    if (!checked)
+    static bool running = true;
+
+
+
+    if (checked)
     {
-        m.SetInitialConditions(4,4,ui->DoubleSpinBox->value()* m.GetEquilibriumDistance());
-
-
+        running = true;
+        m.SetInitialConditions(5,5,ui->DoubleSpinBox->value()* m.GetEquilibriumDistance());
         ui->pushButton->setText("Стоп");
-        future = QtConcurrent::run([&]{start_simulation();});
-        // start_simulation();
+        future = QtConcurrent::run([&]{start_simulation(running);});
         draw_timer.start();
+
+        // sim_timer.singleShot(0,[&]{start_simulation();});
+        // start_simulation();
     }
     else
     {
-        ui->pushButton->setText("Старт");
-        future.cancel();
-        future.waitForFinished();
+        running = false;
         draw_timer.stop();
+        ui->pushButton->setText("Старт");
+        future.waitForFinished();
     }
 }
 

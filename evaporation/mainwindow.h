@@ -31,7 +31,7 @@ private:
     Model m;
 
     void draw_particles(QCustomPlot* g, Model& m);
-    void start_simulation();
+    void start_simulation(bool& running);
 
     QTimer draw_timer;
 
