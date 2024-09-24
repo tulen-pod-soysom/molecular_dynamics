@@ -20,7 +20,6 @@ MainWindow::MainWindow(QWidget *parent)
     ui->widget->addGraph();
 
     m.SetInitialConditions(5, 5, ui->DoubleSpinBox->value() * m.GetEquilibriumDistance());
-    m.EvaluateTimeStep();
 
     draw_particles(ui->widget, m);
 
@@ -38,7 +37,7 @@ void MainWindow::draw_particles(QCustomPlot* p, Model& m)
     p->xAxis->setRange(0, 30);
     p->yAxis->setRange(0, 30);
 
-    p->xAxis->setLabel(QString("iteration: " + QString::number(m.GetIteration())));
+    p->xAxis->setLabel(QString("Итерация: " + QString::number(m.GetIteration())));
 
     auto [x_, y_] = m.GetParticlePositions();
 
@@ -50,16 +49,6 @@ void MainWindow::draw_particles(QCustomPlot* p, Model& m)
         x[i] /= m.GetEquilibriumDistance();
         y[i] /= m.GetEquilibriumDistance();
     }
-
-    // auto part = m.GetParticles();
-    // QVector<double> x(part.size());
-    // QVector<double> y(part.size());
-
-    // for (auto i = 0; i < part.size(); ++i)
-    // {
-    //     x[i] = part[i].m_x / m.GetEquilibriumDistance();
-    //     y[i] = part[i].m_y / m.GetEquilibriumDistance();
-    // }
 
     double w = p->xAxis->range().size();
     double h = p->yAxis->range().size();
@@ -81,6 +70,12 @@ void MainWindow::start_simulation(bool& running)
 {
     while (running)
     {
+        std::chrono::system_clock clk;
+
+        std::chrono::milliseconds period(1000 * iterStep/ ui->SpinBox_3->value());
+
+        auto tp1 = clk.now();
+
         m.Process(iterStep);
 
         if ( !isStarted )
@@ -90,10 +85,9 @@ void MainWindow::start_simulation(bool& running)
         keVal = m.GetKineticEnergySum() / iterStep / 1.6E-19;
         eVal  = peVal + keVal;
 
-        // Qt can't draw from another thread, REMEMBER IT
-        // QTimer::singleShot(0,this,SLOT(timer_event()));
-        // draw_particles(ui->widget,m);
-        // std::this_thread::sleep_for(std::chrono::milliseconds(200));
+        auto tp2 = clk.now();
+
+        std::this_thread::sleep_for(period - (tp2 - tp1));
     }
 }
 
@@ -136,7 +130,7 @@ void MainWindow::draw_energy(QCustomPlot* kEPlot, QCustomPlot* pEPlot,
         isScaled = false;
     }
 
-    kEPlot->yAxis->setLabel("Кинетическая энергия,\n эВ");
+    kEPlot->yAxis->setLabel("Кинетическая\n энергия, эВ");
     kEPlot->yAxis->setLabelFont(QFont("Arial", 8));
     kEPlot->addGraph();
     kEPlot->graph(0)->setData(ind, kE);
@@ -173,6 +167,7 @@ void MainWindow::on_pushButton_clicked(bool checked)
     {
         running = true;
         m.SetInitialConditions(5,5,ui->DoubleSpinBox->value()* m.GetEquilibriumDistance());
+        m.EvaluateTimeStep(ui->DoubleSpinBox_2->value());
         ui->pushButton->setText("Стоп");
         future = QtConcurrent::run([&]{start_simulation(running);});
         draw_timer.start();
