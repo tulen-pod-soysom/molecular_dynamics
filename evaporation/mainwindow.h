@@ -30,10 +30,24 @@ private:
 
     Model m;
 
+    const int iterStep        = 20;
+    const int numOfPlotPoints = 512;
+    int curIdPlot = 0;
+
     void draw_particles(QCustomPlot* g, Model& m);
+    void draw_energy(QCustomPlot* kEPlot, QCustomPlot* pEPlot, QCustomPlot* ePlot, Model& m);
     void start_simulation(bool& running);
 
     QTimer draw_timer;
+
+    QVector<double> pE;
+    QVector<double> kE;
+    QVector<double> e;
+    QVector<double> ind;
+
+    double peVal = 0;
+    double keVal = 0;
+    double eVal  = 0;
 
 };
 #endif // MAINWINDOW_H

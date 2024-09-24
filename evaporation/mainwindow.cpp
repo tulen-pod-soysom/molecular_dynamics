@@ -8,64 +8,43 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
 
-    QVector<double> arr(512);
-    QVector<double> ind(512); std::iota(ind.begin(),ind.end(),0);
+    pE.resize(numOfPlotPoints);
+    kE.resize(numOfPlotPoints);
+    e.resize(numOfPlotPoints);
+    ind.resize(numOfPlotPoints);
 
-    std::transform(arr.begin(),arr.end(),arr.begin(),[](double){return (double)rand()/RAND_MAX;});
+    std::iota(ind.begin(), ind.end(), 0);
 
-    ui->widget_2->yAxis->setLabel("Кинетическая энергия");
-    ui->widget_2->yAxis->setLabelFont(QFont("Arial",8));
-    ui->widget_2->addGraph();
-    ui->widget_2->graph(0)->setData(ind,arr);
-    ui->widget_2->rescaleAxes();
-    ui->widget_2->replot();
-
-    std::transform(arr.begin(),arr.end(),arr.begin(),[](double){return (double)rand()/RAND_MAX;});
-    ui->widget_3->yAxis->setLabel("Потенциальная\n энергия");
-    ui->widget_3->yAxis->setLabelFont(QFont("Arial",8));
-    ui->widget_3->addGraph();
-    ui->widget_3->graph(0)->setData(ind,arr);
-    ui->widget_3->rescaleAxes();
-    ui->widget_3->replot();
-
-    std::transform(arr.begin(),arr.end(),arr.begin(),[](double){return (double)rand()/RAND_MAX;});
-    ui->widget_4->yAxis->setLabel("Полная энергия");
-    ui->widget_4->yAxis->setLabelFont(QFont("Arial",8));
-    ui->widget_4->addGraph();
-    ui->widget_4->graph(0)->setData(ind,arr);
-    ui->widget_4->rescaleAxes();
-    ui->widget_4->replot();
+    draw_energy(ui->widget_2, ui->widget_3, ui->widget_4, m);
 
     ui->widget->addGraph();
 
-    m.SetInitialConditions(5,5,ui->DoubleSpinBox->value()* m.GetEquilibriumDistance());
+    m.SetInitialConditions(5, 5, ui->DoubleSpinBox->value() * m.GetEquilibriumDistance());
     m.EvaluateTimeStep();
 
-    draw_particles(ui->widget,m);
+    draw_particles(ui->widget, m);
 
-    draw_timer.setInterval(1000/30);
-    connect(&draw_timer,SIGNAL(timeout()),this,SLOT(timer_event()));
-
+    draw_timer.setInterval(1000 / 30);
+    connect(&draw_timer, SIGNAL(timeout()), this, SLOT(timer_event()));
 }
-
-
 
 MainWindow::~MainWindow()
 {
     delete ui;
 }
 
-void MainWindow::draw_particles(QCustomPlot *p, Model& m)
-{    
-    p->xAxis->setRange(0,30);
-    p->yAxis->setRange(0,30);
+void MainWindow::draw_particles(QCustomPlot* p, Model& m)
+{
+    p->xAxis->setRange(0, 30);
+    p->yAxis->setRange(0, 30);
 
     p->xAxis->setLabel(QString("iteration: " + QString::number(m.GetIteration())));
 
-    auto [x_,y_] = m.GetParticlePositions();
+    auto [x_, y_] = m.GetParticlePositions();
 
-    QVector<double> x(x_.begin(),x_.end());
-    QVector<double> y(y_.begin(),y_.end());
+    QVector<double> x(x_.begin(), x_.end());
+    QVector<double> y(y_.begin(), y_.end());
+
     for (auto i = 0; i < x.size(); ++i)
     {
         x[i] /= m.GetEquilibriumDistance();
@@ -82,8 +61,6 @@ void MainWindow::draw_particles(QCustomPlot *p, Model& m)
     //     y[i] = part[i].m_y / m.GetEquilibriumDistance();
     // }
 
-
-
     double w = p->xAxis->range().size();
     double h = p->yAxis->range().size();
 
@@ -92,6 +69,7 @@ void MainWindow::draw_particles(QCustomPlot *p, Model& m)
 
     double particle_pixel_radius = 1 * scr_w / w;
     auto g = p->graph(0);
+
     g->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCircle, particle_pixel_radius));
     g->setLineStyle(QCPGraph::lsNone);
     g->setData(x,y,true);
@@ -101,8 +79,12 @@ void MainWindow::draw_particles(QCustomPlot *p, Model& m)
 
 void MainWindow::start_simulation(bool& running)
 {
-    while (running) {
-        m.Process(100);
+    while (running)
+    {
+        m.Process(iterStep);
+        peVal = m.GetPotentialEnergySum() / iterStep;
+        keVal = m.GetKineticEnergySum() / iterStep;
+        eVal  = peVal + keVal;
 
         // Qt can't draw from another thread, REMEMBER IT
         // QTimer::singleShot(0,this,SLOT(timer_event()));
@@ -114,6 +96,52 @@ void MainWindow::start_simulation(bool& running)
 void MainWindow::on_pushButton_toggled(bool checked)
 {
 
+}
+
+void MainWindow::draw_energy(QCustomPlot* kEPlot, QCustomPlot* pEPlot,
+                             QCustomPlot* ePlot, Model& m)
+{
+    if (curIdPlot < numOfPlotPoints)
+    {
+        pE[curIdPlot] = peVal;
+        kE[curIdPlot] = keVal;
+        e[curIdPlot]  = eVal;
+
+        ++curIdPlot;
+    }
+    else
+    {
+        pE = QVector<double>(numOfPlotPoints, 0);
+        kE = QVector<double>(numOfPlotPoints, 0);
+        e  = QVector<double>(numOfPlotPoints, 0);
+        curIdPlot = 0;
+
+        pE[curIdPlot] = peVal;
+        kE[curIdPlot] = keVal;
+        e[curIdPlot]  = eVal;
+        ++curIdPlot;
+    }
+
+    kEPlot->yAxis->setLabel("Кинетическая энергия");
+    kEPlot->yAxis->setLabelFont(QFont("Arial", 8));
+    kEPlot->addGraph();
+    kEPlot->graph(0)->setData(ind, kE);
+    kEPlot->rescaleAxes();
+    kEPlot->replot();
+
+    pEPlot->yAxis->setLabel("Потенциальная\n энергия");
+    pEPlot->yAxis->setLabelFont(QFont("Arial", 8));
+    pEPlot->addGraph();
+    pEPlot->graph(0)->setData(ind, pE);
+    pEPlot->rescaleAxes();
+    pEPlot->replot();
+
+    ePlot->yAxis->setLabel("Полная энергия");
+    ePlot->yAxis->setLabelFont(QFont("Arial", 8));
+    ePlot->addGraph();
+    ePlot->graph(0)->setData(ind, e);
+    ePlot->rescaleAxes();
+    ePlot->replot();
 }
 
 
@@ -144,11 +172,16 @@ void MainWindow::on_pushButton_clicked(bool checked)
         draw_timer.stop();
         ui->pushButton->setText("Старт");
         future.waitForFinished();
+        pE = QVector<double>(numOfPlotPoints, 0);
+        kE = QVector<double>(numOfPlotPoints, 0);
+        e  = QVector<double>(numOfPlotPoints, 0);
+        curIdPlot = 0;
     }
 }
 
 void MainWindow::timer_event()
 {
-    draw_particles(ui->widget,m);
+    draw_particles(ui->widget, m);
+    draw_energy(ui->widget_2, ui->widget_3, ui->widget_4, m);
 }
 
