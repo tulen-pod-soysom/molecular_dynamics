@@ -135,21 +135,21 @@ void MainWindow::draw_energy(QCustomPlot* kEPlot, QCustomPlot* pEPlot,
         ++curIdPlot;
     }
 
-    kEPlot->yAxis->setLabel("Кинетическая энергия");
+    kEPlot->yAxis->setLabel("Кинетическая энергия,\n эВ");
     kEPlot->yAxis->setLabelFont(QFont("Arial", 8));
     kEPlot->addGraph();
     kEPlot->graph(0)->setData(ind, kE);
     kEPlot->rescaleAxes();
     kEPlot->replot();
 
-    pEPlot->yAxis->setLabel("Потенциальная\n энергия");
+    pEPlot->yAxis->setLabel("Потенциальная\n энергия, эВ");
     pEPlot->yAxis->setLabelFont(QFont("Arial", 8));
     pEPlot->addGraph();
     pEPlot->graph(0)->setData(ind, pE);
     pEPlot->rescaleAxes();
     pEPlot->replot();
 
-    ePlot->yAxis->setLabel("Полная энергия");
+    ePlot->yAxis->setLabel("Полная энергия, эВ");
     ePlot->yAxis->setLabelFont(QFont("Arial", 8));
     ePlot->addGraph();
     ePlot->graph(0)->setData(ind, e);
