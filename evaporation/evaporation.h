@@ -215,7 +215,7 @@ public:     // methods
         // time_step = factor * characteristic_time_for_the_model.
 
         // In that case characteristic time for the model will be period
-        // of particle oscillation in a Lennard-Jones potential well.
+        // of particle oscillation in the quadratic approximation of Lennard-Jones potential well.
         // T = (m * a ^ 2 / D) ^ (1 / 2) ~ 2 * 10 ^ (- 12)
         m_timestep = factor * sqrt(Particle::m_m * m_equilibrium_distance * m_equilibrium_distance / m_depth);
 
@@ -223,11 +223,11 @@ public:     // methods
     };
 
     //*****************************************************************************************************
-    // particle_interaction() - function of partecle iteraction
+    // particle_interaction() - function of particle interaction
     //*****************************************************************************************************
     // @param [in] p1 link to first particle
     // @param [in] p2 link to second particle
-    // @return tuple with potentional, force_x for first particle, force_y for first particle
+    // @return tuple with potential, force_x for first particle, force_y for first particle
     //*****************************************************************************************************
     inline static auto particle_interaction(Particle& p1, Particle& p2)
     {
@@ -294,14 +294,12 @@ public:     // methods
     //*****************************************************************************************************
     // @param [in] begin begin iterator for particles vector
     // @param [in] end end iterator for particles vector
-    // @param [in] particle_iteration link to function of particle iteration
+    // @param [in] particle_interaction link to function of interaction between 2 particles (see particle_interaction above)
     //*****************************************************************************************************
     template <typename InputIt, typename InteractionFunc>
     auto velocity_verlet_process(InputIt begin, InputIt end,
                                  InteractionFunc particle_interaction)
     {
-        // Interaction function requires to return potential energy and 4 force projections for two particles as a std::tuple<T,T,T,T,T>
-
         // swap a_i with a_i+1
         for (auto i = begin; i != end; ++i)
         {
