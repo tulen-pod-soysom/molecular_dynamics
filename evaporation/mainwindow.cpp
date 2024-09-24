@@ -82,6 +82,10 @@ void MainWindow::start_simulation(bool& running)
     while (running)
     {
         m.Process(iterStep);
+
+        if ( !isStarted )
+           isStarted = true;
+
         peVal = m.GetPotentialEnergySum() / iterStep;
         keVal = m.GetKineticEnergySum() / iterStep;
         eVal  = peVal + keVal;
@@ -101,6 +105,15 @@ void MainWindow::on_pushButton_toggled(bool checked)
 void MainWindow::draw_energy(QCustomPlot* kEPlot, QCustomPlot* pEPlot,
                              QCustomPlot* ePlot, Model& m)
 {
+    if (isStarted && !isScaled)
+    {
+        pE = QVector<double>(numOfPlotPoints, peVal);
+        kE = QVector<double>(numOfPlotPoints, keVal);
+        e  = QVector<double>(numOfPlotPoints, eVal);
+
+        isScaled = true;
+    }
+
     if (curIdPlot < numOfPlotPoints)
     {
         pE[curIdPlot] = peVal;
@@ -176,6 +189,8 @@ void MainWindow::on_pushButton_clicked(bool checked)
         kE = QVector<double>(numOfPlotPoints, 0);
         e  = QVector<double>(numOfPlotPoints, 0);
         curIdPlot = 0;
+        isStarted = false;
+        isScaled = false;
     }
 }
 

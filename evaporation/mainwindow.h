@@ -33,6 +33,8 @@ private:
     const int iterStep        = 20;
     const int numOfPlotPoints = 512;
     int curIdPlot = 0;
+    bool isStarted = false;
+    bool isScaled  = false;
 
     void draw_particles(QCustomPlot* g, Model& m);
     void draw_energy(QCustomPlot* kEPlot, QCustomPlot* pEPlot, QCustomPlot* ePlot, Model& m);
