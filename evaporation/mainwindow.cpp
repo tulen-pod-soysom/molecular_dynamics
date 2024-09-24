@@ -86,8 +86,8 @@ void MainWindow::start_simulation(bool& running)
         if ( !isStarted )
            isStarted = true;
 
-        peVal = m.GetPotentialEnergySum() / iterStep;
-        keVal = m.GetKineticEnergySum() / iterStep;
+        peVal = m.GetPotentialEnergySum() / iterStep / 1.6E-19;
+        keVal = m.GetKineticEnergySum() / iterStep / 1.6E-19;
         eVal  = peVal + keVal;
 
         // Qt can't draw from another thread, REMEMBER IT
