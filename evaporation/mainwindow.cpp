@@ -133,6 +133,7 @@ void MainWindow::draw_energy(QCustomPlot* kEPlot, QCustomPlot* pEPlot,
         kE[curIdPlot] = keVal;
         e[curIdPlot]  = eVal;
         ++curIdPlot;
+        isScaled = false;
     }
 
     kEPlot->yAxis->setLabel("Кинетическая энергия,\n эВ");
