@@ -37,12 +37,17 @@ void MainWindow::draw_particles(QCustomPlot* p, Model& m)
     p->xAxis->setRange(0, 30);
     p->yAxis->setRange(0, 30);
 
-    p->xAxis->setLabel(QString("Итерация: " + QString::number(m.GetIteration())));
+    p->xAxis->setLabel(QString("Итерация: " + QString::number(m.GetIteration()) + " Вылетевшие атомы: " + QString::number(numOfLoss)));
 
     auto [x_, y_] = m.GetParticlePositions();
 
-    QVector<double> x(x_.begin(), x_.end());
-    QVector<double> y(y_.begin(), y_.end());
+    QVector<double> x(x_.size());
+    QVector<double> y(y_.size());
+
+    std::copy(x_.begin(),x_.end(),x.begin());
+    std::copy(y_.begin(),y_.end(),y.begin());
+//    QVector<double> x(x_.begin(), x_.end());
+//    QVector<double> y(y_.begin(), y_.end());
 
     for (auto i = 0; i < x.size(); ++i)
     {
@@ -77,6 +82,7 @@ void MainWindow::start_simulation(bool& running)
         auto tp1 = clk.now();
 
         m.Process(iterStep);
+        numOfLoss = m.GetParticlesLoss();
 
         if ( !isStarted )
            isStarted = true;

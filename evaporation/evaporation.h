@@ -7,6 +7,7 @@
 #include <tuple>
 #include <vector>
 #include <mutex>
+#include <random>
 
 struct Particle
 {
@@ -42,6 +43,7 @@ private:    // variables
     constexpr static double m_depth                = 0.0103 * 1.602176634E-19;       //!< Potential module energy
                                                                                      //!< of interaction between atoms at equilibrium
 
+    constexpr static double m_boltzman             = 1.38E-23;
     std::vector<Particle>   m_particles;                                             //!< Array with particles
 
     double    m_spaceLeft        = 0;                                                //!< Position of the left wall of the modeling area
@@ -125,6 +127,7 @@ public:     // methods
         for (auto i = 0; i < m_particles.size(); ++i)
         {
             x[i] = m_particles[i].m_x;
+
             y[i] = m_particles[i].m_y;
         }
 
@@ -156,8 +159,50 @@ public:     // methods
         double x = center_x + i * period;
         double y = center_y + j * period;
 
-        return std::make_tuple(x,y);
+        return std::make_tuple(x, y);
     };
+
+    //*****************************************************************************************************
+    // grid2d() - function which makes two dimensional grid
+    //*****************************************************************************************************
+    // @param [in] i index of x axis coordinate for grid
+    // @param [in] j index of y axis coordinate for grid
+    // @param [in] period period of grid
+    // @param [in] center_x value of x coordinate for center of grid
+    // @param [in] center_y value of y coordinate for center of grid
+    // @return tuple with grid coordinates
+    //*****************************************************************************************************
+    template<typename InputIt>
+    auto setInitialVelocities(InputIt begin, InputIt end, double temperature)
+    {
+        size_t N = end - begin;
+
+        double V = sqrt(N * m_boltzman * temperature / Particle::m_m);
+
+        static std::random_device rd;
+        std::uniform_real_distribution<> dist(0, 2 * 3.14159265358979323);
+
+        double sumVx = 0;
+        double sumVy = 0;
+
+        for (auto i = begin; i != end; ++i)
+        {
+            i->m_vX = V * cos(dist(rd));
+            i->m_vY = V * sin(dist(rd));
+
+            sumVx += i->m_vX;
+            sumVy += i->m_vY;
+        }
+
+        sumVx /= N;
+        sumVy /= N;
+
+        for (auto i = begin; i != end; ++i)
+        {
+            i->m_vX -= sumVx;
+            i->m_vY -= sumVy;
+        }
+    }
 
     //*****************************************************************************************************
     // SetInitialConditions() - function which set initial conditions for particles
@@ -198,6 +243,9 @@ public:     // methods
                 m_particles[(i + height / 2) * height + (j + width / 2)].m_y = y;
             }
         }
+
+        // temperature 10 Kelvins
+        setInitialVelocities(m_particles.begin(),m_particles.end(),1);
 
         EvaluateTimeStep();
     }
@@ -385,13 +433,34 @@ public:     // methods
     };
 
     //*****************************************************************************************************
-    // GeiIteration() - get cur value of iteration function
+    // GetIteration() - get cur value of iteration function
     //*****************************************************************************************************
     // @return value of cur iteration
     //*****************************************************************************************************
     uint32_t GetIteration()
     {
         return m_iter;
+    };
+
+    //*****************************************************************************************************
+    // GetParticlesLoss() - get cur value of particles out of modeling space
+    //*****************************************************************************************************
+    // @return number of lost particles
+    //*****************************************************************************************************
+    uint32_t GetParticlesLoss()
+    {
+        uint32_t numOfLoss = 0;
+
+        for (uint32_t i = 0; i < m_particles.size(); ++i)
+        {
+            auto& p = m_particles[i];
+
+            if ( (p.m_x < m_spaceLeft) || (p.m_x > m_spaceRight) ||
+                 (p.m_y < m_spaceBot)  || (p.m_y > m_spaceTop) )
+                numOfLoss++;
+        }
+
+        return numOfLoss;
     };
 };
 

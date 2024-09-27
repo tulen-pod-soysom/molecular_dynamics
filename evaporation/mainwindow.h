@@ -31,6 +31,8 @@ private:
     Model m;
 
     const int iterStep        = 20;
+          int numOfLoss       = 0;
+
     const int numOfPlotPoints = 512;
     int curIdPlot = 0;
     bool isStarted = false;
