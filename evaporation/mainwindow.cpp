@@ -141,20 +141,32 @@ void MainWindow::draw_energy(QCustomPlot* kEPlot, QCustomPlot* pEPlot,
     kEPlot->addGraph();
     kEPlot->graph(0)->setData(ind, kE);
     kEPlot->rescaleAxes();
-    kEPlot->replot();
 
     pEPlot->yAxis->setLabel("Потенциальная\n энергия, эВ");
     pEPlot->yAxis->setLabelFont(QFont("Arial", 8));
     pEPlot->addGraph();
     pEPlot->graph(0)->setData(ind, pE);
     pEPlot->rescaleAxes();
-    pEPlot->replot();
 
     ePlot->yAxis->setLabel("Полная энергия, эВ");
     ePlot->yAxis->setLabelFont(QFont("Arial", 8));
     ePlot->addGraph();
     ePlot->graph(0)->setData(ind, e);
     ePlot->rescaleAxes();
+
+    auto r1 = kEPlot->yAxis->range();
+    auto r2 = pEPlot->yAxis->range();
+    auto r3 = ePlot->yAxis->range();
+
+    auto max_r = std::max({r1.upper,r2.upper,r3.upper});
+    auto min_r = std::min({r1.lower,r2.lower,r3.lower});
+
+    kEPlot->yAxis->setRange(min_r,max_r);
+    pEPlot->yAxis->setRange(min_r,max_r);
+    ePlot->yAxis->setRange(min_r,max_r);
+
+    kEPlot->replot();
+    pEPlot->replot();
     ePlot->replot();
 }
 
