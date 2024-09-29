@@ -173,7 +173,7 @@ public:     // methods
     // @return tuple with grid coordinates
     //*****************************************************************************************************
     template<typename InputIt>
-    auto setInitialVelocities(InputIt begin, InputIt end, double temperature)
+    auto SetInitialVelocities(InputIt begin, InputIt end, double temperature)
     {
         size_t N = end - begin;
 
@@ -226,6 +226,7 @@ public:     // methods
         double center_x = (m_spaceRight - m_spaceLeft) / 2.;
         double center_y = (m_spaceTop - m_spaceBot) / 2.;
 
+        m_particles.resize(width*height);
         m_particles = std::vector<Particle>(width * height);
 
         int leftX  = - height / 2;
@@ -233,19 +234,26 @@ public:     // methods
         int leftY  = - width / 2;
         int rightY = - leftY;
 
-        for (int i = leftX; i <= rightX; ++i)
-        {
-            for (int j = leftY; j <= rightY; ++j)
-            {
-                auto [x, y] = grid2d(i, j, period, center_x, center_y);
+        // for (int i = leftX; i <= rightX; ++i)
+        // {
+        //     for (int j = leftY; j <= rightY; ++j)
+        //     {
+        //         auto [x, y] = grid2d(i, j, period, center_x, center_y);
 
-                m_particles[(i + height / 2) * height + (j + width / 2)].m_x = x;
-                m_particles[(i + height / 2) * height + (j + width / 2)].m_y = y;
-            }
+        //         m_particles[(i + height / 2) * height + (j + width / 2)].m_x = x;
+        //         m_particles[(i + height / 2) * height + (j + width / 2)].m_y = y;
+        //     }
+        // }
+
+        for (auto i = 0 ; i < width * height; ++i)
+        {
+            auto [x, y] = grid2d(leftX + i / width , leftY + i % width, period, center_x, center_y);
+            m_particles[i].m_x = x;
+            m_particles[i].m_y = y;
         }
 
-        // temperature 10 Kelvins
-        setInitialVelocities(m_particles.begin(),m_particles.end(),1);
+        // temperature 1 Kelvin
+        SetInitialVelocities(m_particles.begin(),m_particles.end(),1);
 
         EvaluateTimeStep();
     }
@@ -462,6 +470,11 @@ public:     // methods
 
         return numOfLoss;
     };
+
+    uint32_t GetParticlesAmount()
+    {
+        return m_particles.size();
+    }
 };
 
 #endif    // EVAPORATION_H
