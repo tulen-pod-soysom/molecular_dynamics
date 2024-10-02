@@ -22,6 +22,8 @@ public:    // variables
     double                  m_aX_previous = 0;                             //!< Previous value of x acceleration
     double                  m_aY_previous = 0;                             //!< Previous value of y acceleration
     constexpr static double m_m           = 39.948 * 1.66053906660E-27;    //!< Mass of particle
+    double                  m_vSum        = 0;                             //!< Summ of velocity modul
+    uint32_t                m_counter     = 0;                             //!< Number of items in sum
 
 public:    // methods
 
@@ -30,6 +32,27 @@ public:    // methods
 
     // Default destructor
     ~Particle(){};
+
+    // Add velocity to sum function
+    void AddVelocityInSum()
+    {
+        m_vSum += m_vX * m_vX + m_vY * m_vY;
+        ++m_counter;
+    };
+
+    // Get mean square velocity
+    double GetMeanSVelocity()
+    {
+        if (m_counter == 0)
+            return 0;
+
+        double mVelocity = m_vSum / (double)m_counter;
+
+        m_counter = 0;
+        m_vSum    = 0;
+
+        return mVelocity;
+    };
 };
 
 class Model
@@ -211,7 +234,7 @@ public:     // methods
     // @param [in] height number of segments along the x axis into which the grid is divided
     // @param [in] period period of grid
     //*****************************************************************************************************
-    void SetInitialConditions(int width , int height, double period)
+    void SetInitialConditions(int width, int height, double period)
     {
         // height or width == 1 is problematic
         if ((width <= 1) || (height <= 1) || (period < 0))
@@ -233,7 +256,7 @@ public:     // methods
         int rightX = - leftX;
         int leftY  = - width / 2;
         int rightY = - leftY;
-
+        int size   = width * height;
         // for (int i = leftX; i <= rightX; ++i)
         // {
         //     for (int j = leftY; j <= rightY; ++j)
@@ -245,7 +268,7 @@ public:     // methods
         //     }
         // }
 
-        for (auto i = 0 ; i < width * height; ++i)
+        for (auto i = 0; i < size; ++i)
         {
             auto [x, y] = grid2d(leftX + i / width , leftY + i % width, period, center_x, center_y);
             m_particles[i].m_x = x;
@@ -410,6 +433,8 @@ public:     // methods
             i->m_vX = integrate_velocity(i->m_vX, i->m_aX, i->m_aX_previous, m_timestep);
             i->m_vY = integrate_velocity(i->m_vY, i->m_aY, i->m_aY_previous, m_timestep);
 
+            i->AddVelocityInSum();
+
             kinetic_energy += i->m_m * (i->m_vX * i->m_vX + i->m_vY * i->m_vY) / 2.;
         }
 
@@ -461,7 +486,7 @@ public:     // methods
 
         for (uint32_t i = 0; i < m_particles.size(); ++i)
         {
-            auto& p = m_particles[i];
+            auto& p = m_particles.at(i);
 
             if ( (p.m_x < m_spaceLeft) || (p.m_x > m_spaceRight) ||
                  (p.m_y < m_spaceBot)  || (p.m_y > m_spaceTop) )
@@ -471,10 +496,31 @@ public:     // methods
         return numOfLoss;
     };
 
+    //*****************************************************************************************************
+    // GetParticlesAmount() - get number of particles
+    //*****************************************************************************************************
+    // @return number of particles
+    //*****************************************************************************************************
     uint32_t GetParticlesAmount()
     {
         return m_particles.size();
-    }
+    };
+
+    //*****************************************************************************************************
+    // GetMeanTemprature() - get mean temprature of system in K
+    //*****************************************************************************************************
+    // @return temptrature in K
+    //*****************************************************************************************************
+    double GetMeanTemprature()
+    {
+        double   vSum = 0;
+        uint32_t size = m_particles.size();
+
+        for (uint32_t i = 0; i < size; ++i)
+            vSum += m_particles.at(i).GetMeanSVelocity();
+
+        return (vSum * Particle::m_m / 2.D / (double)size / m_boltzman);
+    };
 };
 
 #endif    // EVAPORATION_H

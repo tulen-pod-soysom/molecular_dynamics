@@ -37,7 +37,7 @@ void MainWindow::draw_particles(QCustomPlot* p, Model& m)
     p->xAxis->setRange(0, 30);
     p->yAxis->setRange(0, 30);
 
-    p->xAxis->setLabel(QString("Итерация: " + QString::number(m.GetIteration()) + " Вылетевшие атомы: " + QString::number(numOfLoss)));
+    p->xAxis->setLabel(QString("Итерация: " + QString::number(m.GetIteration()) + ". Вылетевшие атомы: " + QString::number(numOfLoss) + ". T: " + QString::number(temprature) + " K"));
 
     auto [x_, y_] = m.GetParticlePositions();
 
@@ -87,9 +87,12 @@ void MainWindow::start_simulation(bool& running)
         if ( !isStarted )
            isStarted = true;
 
-        peVal = m.GetPotentialEnergySum() / iterStep / 1.6E-19;
-        keVal = m.GetKineticEnergySum() / iterStep / 1.6E-19;
-        eVal  = peVal + keVal;
+        peVal      = m.GetPotentialEnergySum() / iterStep / 1.6E-19;
+        keVal      = m.GetKineticEnergySum() / iterStep / 1.6E-19;
+        eVal       = peVal + keVal;
+
+        if (m.GetIteration() > 500)
+            temprature = m.GetMeanTemprature();
 
         auto tp2 = clk.now();
 
@@ -202,7 +205,8 @@ void MainWindow::on_pushButton_clicked(bool checked)
         pE = QVector<double>(numOfPlotPoints, 0);
         kE = QVector<double>(numOfPlotPoints, 0);
         e  = QVector<double>(numOfPlotPoints, 0);
-        curIdPlot = 0;
+        temprature = 0;
+        curIdPlot  = 0;
         isStarted = false;
         isScaled = false;
     }

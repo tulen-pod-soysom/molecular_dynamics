@@ -49,9 +49,9 @@ private:
     QVector<double> e;
     QVector<double> ind;
 
-    double peVal = 0;
-    double keVal = 0;
-    double eVal  = 0;
-
+    double peVal      = 0;
+    double keVal      = 0;
+    double eVal       = 0;
+    double temprature = 0;
 };
 #endif // MAINWINDOW_H
