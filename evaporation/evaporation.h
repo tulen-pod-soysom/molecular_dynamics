@@ -82,6 +82,8 @@ private:    // variables
     double    m_kESum      = 0;                                                      //!< Kinetic energy sum
     double    m_pESum      = 0;                                                      //!< Potencial energy sum
 
+    double    m_temp       = 1;                                                      //!< Init temprature in K
+
     std::mutex protection_mutex;                                                     //!< Mutex for data
 
 public:     // methods
@@ -276,7 +278,7 @@ public:     // methods
         }
 
         // temperature 1 Kelvin
-        SetInitialVelocities(m_particles.begin(),m_particles.end(),1);
+        SetInitialVelocities(m_particles.begin(), m_particles.end(), m_temp);
 
         EvaluateTimeStep();
     }
@@ -521,6 +523,18 @@ public:     // methods
 
         return (vSum * Particle::m_m / 2.D / (double)size / m_boltzman);
     };
+
+    //*****************************************************************************************************
+    // SetTemprature() - get initial temprature in K
+    //*****************************************************************************************************
+    //! @param [in] t value of init temprature in K
+    //*****************************************************************************************************
+    void SetTemprature(double t)
+    {
+        if (t >= 0)
+            m_temp = t;
+    };
+
 };
 
 #endif    // EVAPORATION_H

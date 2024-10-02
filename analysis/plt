@@ -3,4 +3,4 @@ set ylabel "Кол-во вылетевших атомов [ед]"
 
 set terminal png size 1024,1024
 set output 'out.png'
-plot "out.txt" 
+plot "build/out.txt" 

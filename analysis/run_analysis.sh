@@ -1,1 +1,6 @@
-./a.out && gnuplot plt
+mkdir build
+cd build
+cmake ..
+make
+cd ..
+./build/analyse && gnuplot plt

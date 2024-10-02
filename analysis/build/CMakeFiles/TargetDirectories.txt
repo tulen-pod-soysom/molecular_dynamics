@@ -1,0 +1,3 @@
+/mnt/i/molecular_dynamics/analysis/build/CMakeFiles/analyse.dir
+/mnt/i/molecular_dynamics/analysis/build/CMakeFiles/edit_cache.dir
+/mnt/i/molecular_dynamics/analysis/build/CMakeFiles/rebuild_cache.dir
