@@ -1,6 +1,7 @@
 mkdir build
 cd build
-cmake ..
-make
+
+cmake .. -DCMAKE_BUILD_TYPE=Release
+cmake --build .
 cd ..
 ./build/analyse && gnuplot plt

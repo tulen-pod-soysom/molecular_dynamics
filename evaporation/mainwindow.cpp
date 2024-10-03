@@ -92,7 +92,7 @@ void MainWindow::start_simulation(bool& running)
         eVal       = peVal + keVal;
 
         if (m.GetIteration() > 500)
-            temprature = m.GetMeanTemprature();
+            temprature = m.GetMeanTemperature();
 
         auto tp2 = clk.now();
 

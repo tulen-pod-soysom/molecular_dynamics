@@ -85,6 +85,7 @@ private:    // variables
     double    m_temp       = 1;                                                      //!< Init temprature in K
 
     std::mutex protection_mutex;                                                     //!< Mutex for data
+    std::random_device rd;                                                           //!< random device for setting initial velocities
 
 public:     // methods
 
@@ -101,7 +102,7 @@ public:     // methods
     //*****************************************************************************************************
     // GetParticles() - get vector with particlues function
     //*****************************************************************************************************
-    // @return vector with particles
+    //! @return vector with particles
     //*****************************************************************************************************
     auto GetParticles()
     {
@@ -110,10 +111,17 @@ public:     // methods
         return m_particles;
     };
 
+
+    bool InBounds(double x, double y)
+    {
+        return (x > m_spaceLeft) && (x < m_spaceRight) &&
+            (y > m_spaceBot) && (y < m_spaceTop);
+    }
+
     //*****************************************************************************************************
     // GetPotentialEnergySum() - get potensial energy sum and set p.e. as zero
     //*****************************************************************************************************
-    // @return potension energy sum
+    //! @return potential energy sum
     //*****************************************************************************************************
     auto GetPotentialEnergySum()
     {
@@ -124,9 +132,9 @@ public:     // methods
     };
 
     //*****************************************************************************************************
-    // GetKineticEnergySum() - get kinetic energy sum and set p.e. as zero
+    // GetKineticEnergySum() - get kinetic energy sum and set k.e. as zero
     //*****************************************************************************************************
-    // @return potension energy sum
+    //! @return kinetic energy sum
     //*****************************************************************************************************
     auto GetKineticEnergySum()
     {
@@ -140,7 +148,7 @@ public:     // methods
     //*****************************************************************************************************
     // GetParticlesPositions() - get tuple with vectors of particlues positions function
     //*****************************************************************************************************
-    // @return tuple with vectors of particles positions
+    //! @return tuple with vectors of particles positions
     //*****************************************************************************************************
     auto GetParticlePositions()
     {
@@ -162,7 +170,7 @@ public:     // methods
     //*****************************************************************************************************
     // GetEquilibriumDistance() - get equilibrium distanse between particles function
     //*****************************************************************************************************
-    // @return equilibrium distance
+    //! @return equilibrium distance
     //*****************************************************************************************************
     auto GetEquilibriumDistance()
     {
@@ -172,12 +180,12 @@ public:     // methods
     //*****************************************************************************************************
     // grid2d() - function which makes two dimensional grid
     //*****************************************************************************************************
-    // @param [in] i index of x axis coordinate for grid
-    // @param [in] j index of y axis coordinate for grid
-    // @param [in] period period of grid
-    // @param [in] center_x value of x coordinate for center of grid
-    // @param [in] center_y value of y coordinate for center of grid
-    // @return tuple with grid coordinates
+    //! @param [in] i index of x axis coordinate for grid
+    //! @param [in] j index of y axis coordinate for grid
+    //! @param [in] period period of grid
+    //! @param [in] center_x value of x coordinate for center of grid
+    //! @param [in] center_y value of y coordinate for center of grid
+    //! @return tuple with grid coordinates
     //*****************************************************************************************************
     auto grid2d(int i, int j, double period, double center_x, double center_y)
     {
@@ -190,12 +198,12 @@ public:     // methods
     //*****************************************************************************************************
     // grid2d() - function which makes two dimensional grid
     //*****************************************************************************************************
-    // @param [in] i index of x axis coordinate for grid
-    // @param [in] j index of y axis coordinate for grid
-    // @param [in] period period of grid
-    // @param [in] center_x value of x coordinate for center of grid
-    // @param [in] center_y value of y coordinate for center of grid
-    // @return tuple with grid coordinates
+    //! @param [in] i index of x axis coordinate for grid
+    //! @param [in] j index of y axis coordinate for grid
+    //! @param [in] period period of grid
+    //! @param [in] center_x value of x coordinate for center of grid
+    //! @param [in] center_y value of y coordinate for center of grid
+    //! @return tuple with grid coordinates
     //*****************************************************************************************************
     template<typename InputIt>
     auto SetInitialVelocities(InputIt begin, InputIt end, double temperature)
@@ -204,7 +212,6 @@ public:     // methods
 
         double V = sqrt(N * m_boltzman * temperature / Particle::m_m);
 
-        static std::random_device rd;
         std::uniform_real_distribution<> dist(0, 2 * 3.14159265358979323);
 
         double sumVx = 0;
@@ -232,9 +239,9 @@ public:     // methods
     //*****************************************************************************************************
     // SetInitialConditions() - function which set initial conditions for particles
     //*****************************************************************************************************
-    // @param [in] width number of segments along the y axis into which the grid is divided
-    // @param [in] height number of segments along the x axis into which the grid is divided
-    // @param [in] period period of grid
+    //! @param [in] width number of segments along the y axis into which the grid is divided
+    //! @param [in] height number of segments along the x axis into which the grid is divided
+    //! @param [in] period period of grid
     //*****************************************************************************************************
     void SetInitialConditions(int width, int height, double period)
     {
@@ -286,7 +293,7 @@ public:     // methods
     //*****************************************************************************************************
     // EvaluateTimeStep() - evaluate time step funtion
     //*****************************************************************************************************
-    // @param [in, optional] factor value of factor of time step for adjustment
+    //! @param [in, optional] factor value of factor of time step for adjustment
     //*****************************************************************************************************
     double EvaluateTimeStep(double factor = 0.01)
     {
@@ -306,9 +313,9 @@ public:     // methods
     //*****************************************************************************************************
     // particle_interaction() - function of particle interaction
     //*****************************************************************************************************
-    // @param [in] p1 link to first particle
-    // @param [in] p2 link to second particle
-    // @return tuple with potential, force_x for first particle, force_y for first particle
+    //! @param [in] p1 link to first particle
+    //! @param [in] p2 link to second particle
+    //! @return tuple with potential, force_x for first particle, force_y for first particle
     //*****************************************************************************************************
     inline static auto particle_interaction(Particle& p1, Particle& p2)
     {
@@ -328,11 +335,11 @@ public:     // methods
     //*****************************************************************************************************
     // integrate_position() - function of Verle algorithm for position of particle
     //*****************************************************************************************************
-    // @param [in] pos current value of particle position
-    // @param [in] vel current value of particle velocity
-    // @param [in] acc current value of particle acceleration
-    // @param [in] dt value time step for modeling
-    // @return new value of particle position
+    //! @param [in] pos current value of particle position
+    //! @param [in] vel current value of particle velocity
+    //! @param [in] acc current value of particle acceleration
+    //! @param [in] dt value time step for modeling
+    //! @return new value of particle position
     //*****************************************************************************************************
     template <typename T>
     auto integrate_position(T pos, T vel, T acc, T dt)
@@ -343,11 +350,11 @@ public:     // methods
     //*****************************************************************************************************
     // integrate_velocity() - function of Verle algorithm for velocity of particle
     //*****************************************************************************************************
-    // @param [in] vel current value of particle velocity
-    // @param [in] acc_prew current value of particle acceleration
-    // @param [in] acc_new new value of particle acceleration
-    // @param [in] dt value time step for modeling
-    // @return new value of particle position
+    //! @param [in] vel current value of particle velocity
+    //! @param [in] acc_prew current value of particle acceleration
+    //! @param [in] acc_new new value of particle acceleration
+    //! @param [in] dt value time step for modeling
+    //! @return new value of particle position
     //*****************************************************************************************************
     template <typename T>
     auto integrate_velocity(T vel, T acc_prev, T acc_new, T dt)
@@ -373,9 +380,9 @@ public:     // methods
     //*****************************************************************************************************
     // velocity_verlet_process() - function of Verle algorithm
     //*****************************************************************************************************
-    // @param [in] begin begin iterator for particles vector
-    // @param [in] end end iterator for particles vector
-    // @param [in] particle_interaction link to function of interaction between 2 particles (see particle_interaction above)
+    //! @param [in] begin begin iterator for particles vector
+    //! @param [in] end end iterator for particles vector
+    //! @param [in] particle_interaction link to function of interaction between 2 particles (see particle_interaction above)
     //*****************************************************************************************************
     template <typename InputIt, typename InteractionFunc>
     auto velocity_verlet_process(InputIt begin, InputIt end,
@@ -446,7 +453,7 @@ public:     // methods
     //*****************************************************************************************************
     // Process() - process some iterations of modeling function
     //*****************************************************************************************************
-    // @param [in] iterations value of iterations to process
+    //! @param [in] iterations value of iterations to process
     //*****************************************************************************************************
     void Process(uint32_t iterations)
     {
@@ -470,7 +477,7 @@ public:     // methods
     //*****************************************************************************************************
     // GetIteration() - get cur value of iteration function
     //*****************************************************************************************************
-    // @return value of cur iteration
+    //! @return value of cur iteration
     //*****************************************************************************************************
     uint32_t GetIteration()
     {
@@ -480,7 +487,7 @@ public:     // methods
     //*****************************************************************************************************
     // GetParticlesLoss() - get cur value of particles out of modeling space
     //*****************************************************************************************************
-    // @return number of lost particles
+    //! @return number of lost particles
     //*****************************************************************************************************
     uint32_t GetParticlesLoss()
     {
@@ -501,7 +508,7 @@ public:     // methods
     //*****************************************************************************************************
     // GetParticlesAmount() - get number of particles
     //*****************************************************************************************************
-    // @return number of particles
+    //! @return number of particles
     //*****************************************************************************************************
     uint32_t GetParticlesAmount()
     {
@@ -509,27 +516,36 @@ public:     // methods
     };
 
     //*****************************************************************************************************
-    // GetMeanTemprature() - get mean temprature of system in K
+    // GetMeanTemperature() - get mean temperature of system in Kelvin
     //*****************************************************************************************************
-    // @return temptrature in K
+    //! @return temperature in Kelvin
     //*****************************************************************************************************
-    double GetMeanTemprature()
+    double GetMeanTemperature()
     {
         double   vSum = 0;
         uint32_t size = m_particles.size();
 
         for (uint32_t i = 0; i < size; ++i)
-            vSum += m_particles.at(i).GetMeanSVelocity();
+        {
+            double x = m_particles.at(i).m_x;
+            double y = m_particles.at(i).m_y;
 
-        return (vSum * Particle::m_m / 2.D / (double)size / m_boltzman);
+            if (InBounds(x, y))
+              vSum += m_particles.at(i).GetMeanSVelocity();
+            else 
+              m_particles.at(i).GetMeanSVelocity();
+            
+        }
+
+        return (vSum * Particle::m_m / 2. / (double)size / m_boltzman);
     };
 
     //*****************************************************************************************************
-    // SetTemprature() - get initial temprature in K
+    // SetTemperature() - get initial temperature in K
     //*****************************************************************************************************
-    //! @param [in] t value of init temprature in K
+    //! @param [in] t value of init temperature in K
     //*****************************************************************************************************
-    void SetTemprature(double t)
+    void SetTemperature(double t)
     {
         if (t >= 0)
             m_temp = t;
