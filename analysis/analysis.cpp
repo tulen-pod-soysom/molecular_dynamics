@@ -1,13 +1,13 @@
 #include "../evaporation/evaporation.h"
 #include <fstream>
 #include <iostream>
+#include <sstream>
 #include <vector>
 
 constexpr static double boltzman_constant = 1.38E-23;
 
 int main()
 {
-    std::ofstream f("out.txt");
 
     Model m;
     m.EvaluateTimeStep(0.01);
@@ -18,6 +18,15 @@ int main()
     unsigned numOfExperimentsPerStep = 10;
     unsigned numOfSteps              = 100;
     double   initTemp         = 0;
+
+    std::cout << "Type configuration (width height,f.e 4 4):"  << std::endl;
+    std::cin >> width >> height;
+
+
+    std::stringstream ss;
+    ss << "out" << width << 'x' << height << ".txt";
+
+    std::ofstream f(ss.str());
 
     std::cout << "Type num of steps:" << std::endl;
     std::cin >> numOfSteps;
