@@ -38,8 +38,8 @@ int main()
 
     double   b                 = 0;
     unsigned numOfIter         = 5000;
-    unsigned iterDuration      = 500;
-    unsigned numOfIterDuration = numOfIter - iterDuration;
+    unsigned averagingSteps      = 500;
+    unsigned numOfIterDuration = numOfIter - averagingSteps;
 
     // std::vector<double> temprature(numOfSteps);
     // std::vector<int> loss(numOfSteps);
@@ -63,14 +63,9 @@ int main()
 
             m.Process(numOfIterDuration);
             m.GetKineticEnergySum();
-            m.Process(iterDuration);
-
-            // t_sum    += m.GetKineticEnergySum() / numParticles / boltzman_constant / iterDuration;
-            // loss_sum += m.GetParticlesLoss();
-            // temprature[i] = t_sum / (double)numOfExperimentsPerStep;
-            // loss[i]       = loss_sum / numOfExperimentsPerStep;
-
-            double temperature = m.GetKineticEnergySum() / numParticles / boltzman_constant / iterDuration;
+            m.Process(averagingSteps);
+            
+            double temperature = m.GetKineticEnergySum() / numParticles / boltzman_constant / averagingSteps;
             double loss = m.GetParticlesLoss();
             f << temperature << ' ' << loss << std::endl;
         }

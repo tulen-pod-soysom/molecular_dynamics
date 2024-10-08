@@ -210,7 +210,7 @@ public:     // methods
     {
         size_t N = end - begin;
 
-        double V = sqrt(N * m_boltzman * temperature / Particle::m_m);
+        double V = sqrt(m_boltzman * temperature / Particle::m_m);
 
         std::uniform_real_distribution<> dist(0, 2 * 3.14159265358979323);
 
@@ -219,8 +219,9 @@ public:     // methods
 
         for (auto i = begin; i != end; ++i)
         {
-            i->m_vX = V * cos(dist(rd));
-            i->m_vY = V * sin(dist(rd));
+            double angle = dist(rd);
+            i->m_vX = V * cos(angle);
+            i->m_vY = V * sin(angle);
 
             sumVx += i->m_vX;
             sumVy += i->m_vY;

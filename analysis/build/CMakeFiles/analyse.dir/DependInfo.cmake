@@ -8,7 +8,7 @@ set(CMAKE_DEPENDS_LANGUAGES
 
 # The set of dependency files which are needed:
 set(CMAKE_DEPENDS_DEPENDENCY_FILES
-  "/home/aleksey/repos/common_molecular_dynamics/molecular_dynamics/analysis/analysis.cpp" "CMakeFiles/analyse.dir/analysis.cpp.o" "gcc" "CMakeFiles/analyse.dir/analysis.cpp.o.d"
+  "/home/aleksey/workspace/molecular_dynamics/analysis/analysis.cpp" "CMakeFiles/analyse.dir/analysis.cpp.o" "gcc" "CMakeFiles/analyse.dir/analysis.cpp.o.d"
   )
 
 # Targets to which this target links which contain Fortran sources.

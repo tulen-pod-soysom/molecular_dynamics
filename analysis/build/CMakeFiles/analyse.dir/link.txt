@@ -1,1 +1,1 @@
-/usr/bin/c++ CMakeFiles/analyse.dir/analysis.cpp.o -o analyse
+/usr/bin/c++ -O3 -DNDEBUG CMakeFiles/analyse.dir/analysis.cpp.o -o analyse
