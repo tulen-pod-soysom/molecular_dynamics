@@ -9,15 +9,15 @@ set yrange[-1:]
 set xzeroaxis
 set yzeroaxis
 
-set output '4x4.png'
+set output 'full_4x4.png'
 plot "out4x4.txt" using 1:2
 
 
-set output '5x5.png'
+set output 'full_5x5.png'
 plot "out5x5.txt" using 1:2
 
 
-set output '6x6.png'
+set output 'full_6x6.png'
 plot "out6x6.txt" using 1:2
 
 
@@ -28,15 +28,15 @@ filter(x) = (x >= TEMPERATURE_MAX)? (NaN) : (x)
 f(x) = a * x + b
 
 fit f(x) 'out4x4.txt' using (filter($1)):2 via a,b
-set output '4x4_filtered.png'
+set output 'filtered_4x4.png'
 plot "out4x4.txt" using (filter($1)):2, f(x) with lines
 
 
 fit f(x) 'out5x5.txt' using (filter($1)):2 via a,b
-set output '5x5_filtered.png'
+set output 'filtered_5x5.png'
 plot "out5x5.txt" using (filter($1)):2, f(x) with lines
 
 
 fit f(x) 'out6x6.txt' using (filter($1)):2 via a,b
-set output '6x6_filtered.png'
+set output 'filtered_6x6.png'
 plot "out6x6.txt" using (filter($1)):2, f(x) with lines
