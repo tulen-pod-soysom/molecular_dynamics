@@ -30,3 +30,11 @@
 *.exe
 *.out
 *.app
+
+/analysis/build/
+/evaporation/build/
+/analysis/result/*.*
+!/analysis/result/4x4_cfg.txt
+!/analysis/result/5x5_cfg.txt
+!/analysis/result/6x6_cfg.txt
+!/analysis/result/plt

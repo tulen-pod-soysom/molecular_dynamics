@@ -1,3 +1,0 @@
-/home/aleksey/workspace/molecular_dynamics/analysis/build/CMakeFiles/analyse.dir
-/home/aleksey/workspace/molecular_dynamics/analysis/build/CMakeFiles/edit_cache.dir
-/home/aleksey/workspace/molecular_dynamics/analysis/build/CMakeFiles/rebuild_cache.dir
