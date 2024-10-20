@@ -19,7 +19,8 @@ MainWindow::MainWindow(QWidget *parent)
 
     ui->widget->addGraph();
 
-    m.SetInitialConditions(5, 5, ui->DoubleSpinBox->value() * m.GetEquilibriumDistance());
+    m.SetTemperature(ui->DoubleSpinBox_3->value());
+    m.SetInitialConditions(ui->spinBox_2->value(), ui->spinBox_2->value(), ui->DoubleSpinBox->value() * m.GetEquilibriumDistance());
 
     draw_particles(ui->widget, m);
 
@@ -84,15 +85,22 @@ void MainWindow::start_simulation(bool& running)
         m.Process(iterStep);
         numOfLoss = m.GetParticlesLoss();
 
+        counterMean += iterStep;
+
         if ( !isStarted )
            isStarted = true;
 
-        peVal      = m.GetPotentialEnergySum() / iterStep / 1.6E-19;
-        keVal      = m.GetKineticEnergySum() / iterStep / 1.6E-19;
-        eVal       = peVal + keVal;
+        if (counterMean >= ui->spinBox->value())
+        {
+            counterMean = 0;
 
-        if (m.GetIteration() > 500)
-            temprature = m.GetMeanTemperature();
+            peVal      = m.GetPotentialEnergySum() / iterStep / 1.6E-19;
+            keVal      = m.GetKineticEnergySum() / iterStep / 1.6E-19;
+            eVal       = peVal + keVal;
+
+            if (m.GetIteration() > 500)
+                temprature = m.GetMeanTemperature();
+        }
 
         auto tp2 = clk.now();
 
@@ -187,7 +195,9 @@ void MainWindow::on_pushButton_clicked(bool checked)
     if (checked)
     {
         running = true;
-        m.SetInitialConditions(5,5,ui->DoubleSpinBox->value()* m.GetEquilibriumDistance());
+
+        m.SetTemperature(ui->DoubleSpinBox_3->value());
+        m.SetInitialConditions(ui->spinBox_2->value(), ui->spinBox_2->value() ,ui->DoubleSpinBox->value()* m.GetEquilibriumDistance());
         m.EvaluateTimeStep(ui->DoubleSpinBox_2->value());
         ui->pushButton->setText("Стоп");
         future = QtConcurrent::run([&]{start_simulation(running);});
@@ -207,6 +217,7 @@ void MainWindow::on_pushButton_clicked(bool checked)
         e  = QVector<double>(numOfPlotPoints, 0);
         temprature = 0;
         curIdPlot  = 0;
+        counterMean = 0;
         isStarted = false;
         isScaled = false;
     }

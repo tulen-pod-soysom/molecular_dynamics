@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1461</width>
-    <height>774</height>
+    <width>1493</width>
+    <height>806</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -20,7 +20,7 @@
       <x>10</x>
       <y>10</y>
       <width>701</width>
-      <height>581</height>
+      <height>571</height>
      </rect>
     </property>
    </widget>
@@ -37,10 +37,10 @@
    <widget class="QWidget" name="formLayoutWidget">
     <property name="geometry">
      <rect>
-      <x>0</x>
-      <y>590</y>
+      <x>10</x>
+      <y>580</y>
       <width>411</width>
-      <height>141</height>
+      <height>191</height>
      </rect>
     </property>
     <layout class="QFormLayout" name="formLayout">
@@ -99,15 +99,34 @@
        </property>
       </widget>
      </item>
-     <item row="2" column="1">
-      <spacer name="verticalSpacer">
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>20</width>
-         <height>40</height>
-        </size>
+     <item row="2" column="0">
+      <widget class="QLabel" name="Label_4">
+       <property name="text">
+        <string>Начальная температура</string>
        </property>
-      </spacer>
+      </widget>
+     </item>
+     <item row="2" column="1">
+      <widget class="QDoubleSpinBox" name="DoubleSpinBox_3">
+       <property name="prefix">
+        <string/>
+       </property>
+       <property name="suffix">
+        <string> в Кельвинах</string>
+       </property>
+       <property name="decimals">
+        <number>3</number>
+       </property>
+       <property name="maximum">
+        <double>1000.000000000000000</double>
+       </property>
+       <property name="singleStep">
+        <double>1.000000000000000</double>
+       </property>
+       <property name="value">
+        <double>1.000000000000000</double>
+       </property>
+      </widget>
      </item>
      <item row="3" column="0">
       <widget class="QLabel" name="Label_3">
@@ -135,13 +154,56 @@
        </property>
       </widget>
      </item>
+     <item row="4" column="1">
+      <widget class="QSpinBox" name="spinBox">
+       <property name="suffix">
+        <string> в шагах по времени</string>
+       </property>
+       <property name="prefix">
+        <string/>
+       </property>
+       <property name="minimum">
+        <number>20</number>
+       </property>
+       <property name="maximum">
+        <number>200</number>
+       </property>
+       <property name="value">
+        <number>100</number>
+       </property>
+      </widget>
+     </item>
+     <item row="4" column="0">
+      <widget class="QLabel" name="Label_5">
+       <property name="text">
+        <string>Усреднение T и E</string>
+       </property>
+      </widget>
+     </item>
+     <item row="5" column="0">
+      <widget class="QLabel" name="Label_6">
+       <property name="text">
+        <string>Количество частиц</string>
+       </property>
+      </widget>
+     </item>
+     <item row="5" column="1">
+      <widget class="QSpinBox" name="spinBox_2">
+       <property name="minimum">
+        <number>1</number>
+       </property>
+       <property name="value">
+        <number>5</number>
+       </property>
+      </widget>
+     </item>
     </layout>
    </widget>
    <widget class="QPushButton" name="pushButton">
     <property name="geometry">
      <rect>
-      <x>590</x>
-      <y>690</y>
+      <x>460</x>
+      <y>710</y>
       <width>351</width>
       <height>41</height>
      </rect>
@@ -159,8 +221,8 @@
     </property>
     <property name="geometry">
      <rect>
-      <x>420</x>
-      <y>690</y>
+      <x>820</x>
+      <y>710</y>
       <width>171</width>
       <height>41</height>
      </rect>
@@ -201,7 +263,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1461</width>
+     <width>1493</width>
      <height>20</height>
     </rect>
    </property>
