@@ -1,0 +1,22 @@
+set xlabel "Температура [K]"
+set ylabel "Кол-во вылетевших атомов [ед]"
+
+set terminal png size 1024,1024
+
+set xrange[0:]
+set yrange[-1:]
+
+set xzeroaxis
+set yzeroaxis
+
+set output 'out.png'
+plot "7x7 data.txt" using 1:2
+
+#TEMPERATURE_MAX = 75 / 2
+#filter(x) = (x >= TEMPERATURE_MAX)? (NaN) : (x)
+
+#f(x) = a * x + b
+#fit f(x) 'out.txt' using (filter($1)):2 via a,b
+
+#set output 'out_filtered.png'
+#plot "out.txt" using (filter($1)):2, f(x) with lines
