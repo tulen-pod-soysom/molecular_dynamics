@@ -38,6 +38,7 @@ void MainWindow::draw_particles(QCustomPlot* p, Model& m)
     p->xAxis->setRange(0, 30);
     p->yAxis->setRange(0, 30);
 
+    auto[c_x,c_y] = m.GetDropletMassCenter();
     p->xAxis->setLabel(QString("Итерация: " + QString::number(m.GetIteration()) + ". Вылетевшие атомы: " + QString::number(numOfLoss) + ". T: " + QString::number(temprature) + " K"));
 
     auto [x_, y_] = m.GetParticlePositions();
@@ -69,6 +70,11 @@ void MainWindow::draw_particles(QCustomPlot* p, Model& m)
     g->setLineStyle(QCPGraph::lsNone);
     g->setData(x,y,true);
 
+    QCPItemEllipse mass_center(p);
+    // mass_center.end->setCoords(c_x,c_y);
+    mass_center.topLeft->setCoords(c_x/m.GetEquilibriumDistance()-10,c_y/m.GetEquilibriumDistance()-10);
+    mass_center.bottomRight->setCoords(c_x/m.GetEquilibriumDistance()+10,c_y/m.GetEquilibriumDistance()+10);
+
     p->replot();
 }
 
@@ -90,13 +96,15 @@ void MainWindow::start_simulation(bool& running)
         if ( !isStarted )
            isStarted = true;
 
+
+
         if (counterMean >= ui->spinBox->value())
         {
+            peVal      = m.GetPotentialEnergySum() / counterMean / 1.6E-19;
+            keVal      = m.GetKineticEnergySum() / counterMean / 1.6E-19;
+            eVal       = peVal + keVal;
             counterMean = 0;
 
-            peVal      = m.GetPotentialEnergySum() / iterStep / 1.6E-19;
-            keVal      = m.GetKineticEnergySum() / iterStep / 1.6E-19;
-            eVal       = peVal + keVal;
 
             if (m.GetIteration() > 500)
                 temprature = m.GetMeanTemperature();
@@ -227,5 +235,11 @@ void MainWindow::timer_event()
 {
     draw_particles(ui->widget, m);
     draw_energy(ui->widget_2, ui->widget_3, ui->widget_4, m);
+}
+
+
+void MainWindow::on_pushButton_clicked()
+{
+
 }
 

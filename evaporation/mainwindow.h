@@ -25,6 +25,8 @@ private slots:
     void on_pushButton_clicked(bool checked);
     void timer_event();
 
+    void on_pushButton_clicked();
+
 private:
     Ui::MainWindow *ui;
 

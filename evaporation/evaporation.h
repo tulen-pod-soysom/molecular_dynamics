@@ -22,8 +22,9 @@ public:    // variables
     double                  m_aX_previous = 0;                             //!< Previous value of x acceleration
     double                  m_aY_previous = 0;                             //!< Previous value of y acceleration
     constexpr static double m_m           = 39.948 * 1.66053906660E-27;    //!< Mass of particle
-    double                  m_vSum        = 0;                             //!< Summ of velocity modul
+    double                  m_vSum        = 0;                             //!< Summ of velocity square
     uint32_t                m_counter     = 0;                             //!< Number of items in sum
+    bool                    m_bLeftDroplet= false;                         //!< defines if the particle is considered out of droplet
 
 public:    // methods
 
@@ -65,8 +66,8 @@ private:    // variables
                                                      m_sigma * m_sigma * m_sigma;    //!< Value of distanse between atomic centers to the sixth power
     constexpr static double m_depth                = 0.0103 * 1.602176634E-19;       //!< Potential module energy
                                                                                      //!< of interaction between atoms at equilibrium
-
     constexpr static double m_boltzman             = 1.38E-23;
+
     std::vector<Particle>   m_particles;                                             //!< Array with particles
 
     double    m_spaceLeft        = 0;                                                //!< Position of the left wall of the modeling area
@@ -83,6 +84,9 @@ private:    // variables
     double    m_pESum      = 0;                                                      //!< Potencial energy sum
 
     double    m_temp       = 1;                                                      //!< Init temprature in K
+
+    double    m_droplet_mass_center_x = 0;
+    double    m_droplet_mass_center_y = 0;
 
     std::mutex protection_mutex;                                                     //!< Mutex for data
     std::random_device rd;                                                           //!< random device for setting initial velocities
@@ -210,7 +214,7 @@ public:     // methods
     {
         size_t N = end - begin;
 
-        double V = sqrt(m_boltzman * temperature / Particle::m_m);
+        double V = sqrt(2*m_boltzman * temperature / Particle::m_m);
 
         std::uniform_real_distribution<> dist(0, 2 * 3.14159265358979323);
 
@@ -470,10 +474,44 @@ public:     // methods
     void Process()
     {
         velocity_verlet_process(m_particles.begin(), m_particles.end(), particle_interaction);
+        check_droplet_mass_center(m_equilibrium_distance*10);
         ++m_iter;
 
         return;
     };
+
+    void check_droplet_mass_center(double check_distance)
+    {
+        m_droplet_mass_center_x = 0;
+        m_droplet_mass_center_y = 0;
+        uint32_t droplet_size = 0;
+        for (auto i = 0; i < m_particles.size(); ++i)
+        {
+            if (!m_particles[i].m_bLeftDroplet)
+            {
+                m_droplet_mass_center_x += m_particles[i].m_x;
+                m_droplet_mass_center_y += m_particles[i].m_y;
+                droplet_size++;
+            }
+        }
+        m_droplet_mass_center_x /= (double)droplet_size;
+        m_droplet_mass_center_y /= (double)droplet_size;
+
+        for (auto i = 0; i < m_particles.size(); ++i)
+        {
+            if (m_particles[i].m_bLeftDroplet) continue;
+
+            auto& x = m_particles[i].m_x;
+            auto& y = m_particles[i].m_y;
+
+            auto& x_ = m_droplet_mass_center_x;
+            auto& y_ = m_droplet_mass_center_y;
+
+            if ((x-x_)*(x-x_) + (y-y_)*(y-y_) >= check_distance*check_distance) m_particles[i].m_bLeftDroplet = true;
+
+        }
+
+    }
 
     //*****************************************************************************************************
     // GetIteration() - get cur value of iteration function
@@ -498,9 +536,10 @@ public:     // methods
         {
             auto& p = m_particles.at(i);
 
-            if ( (p.m_x < m_spaceLeft) || (p.m_x > m_spaceRight) ||
-                 (p.m_y < m_spaceBot)  || (p.m_y > m_spaceTop) )
-                numOfLoss++;
+            if (p.m_bLeftDroplet) numOfLoss++;
+            // if ( (p.m_x < m_spaceLeft) || (p.m_x > m_spaceRight) ||
+                 // (p.m_y < m_spaceBot)  || (p.m_y > m_spaceTop) )
+                // numOfLoss++;
         }
 
         return numOfLoss;
@@ -525,20 +564,32 @@ public:     // methods
     {
         double   vSum = 0;
         uint32_t size = m_particles.size();
+        uint32_t part_inside =0;
 
         for (uint32_t i = 0; i < size; ++i)
         {
-            double x = m_particles.at(i).m_x;
-            double y = m_particles.at(i).m_y;
 
-            if (InBounds(x, y))
-              vSum += m_particles.at(i).GetMeanSVelocity();
-            else 
-              m_particles.at(i).GetMeanSVelocity();
+            // if (!m_particles.at(i).m_bLeftDroplet)
+            // {
+            //     vSum += m_particles.at(i).GetMeanSVelocity();
+            //     part_inside++;
+            // }
+
+            // double x = m_particles.at(i).m_x;
+            // double y = m_particles.at(i).m_y;
+
+            // if (InBounds(x, y))
+            // vSum += m_particles.at(i).GetMeanSVelocity();
+            // else
+            // m_particles.at(i).GetMeanSVelocity();
             
+            vSum += m_particles.at(i).GetMeanSVelocity();
         }
 
         return (vSum * Particle::m_m / 2. / (double)size / m_boltzman);
+        // return (vSum * Particle::m_m / 2. / (double)part_inside / m_boltzman);
+
+        // return GetKineticEnergySum() / (double) size / m_boltzman;
     };
 
     //*****************************************************************************************************
@@ -552,6 +603,10 @@ public:     // methods
             m_temp = t;
     };
 
+    auto GetDropletMassCenter()
+    {
+        return std::make_tuple(m_droplet_mass_center_x,m_droplet_mass_center_y);
+    }
 };
 
 #endif    // EVAPORATION_H

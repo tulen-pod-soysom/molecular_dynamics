@@ -12,7 +12,7 @@ int main()
     Model m;
     m.EvaluateTimeStep(0.01);
 
-    double   left  = 0.9, right  = 1.5;
+    double   left  = 0.9, right  = 2.0;
     unsigned width = 6,   height = 6;
 
     unsigned numOfExperimentsPerStep = 10;
@@ -34,10 +34,9 @@ int main()
     std::cout << "Type num of experiments per step:" << std::endl;
     std::cin >> numOfExperimentsPerStep;
 
-    std::cout << "Type initial velocities (Kelvin):" << std::endl;
-    std::cin >> initTemp;
+    // std::cout << "Type initial velocities (Kelvin):" << std::endl;
+    // std::cin >> initTemp;
 
-    m.SetTemperature(initTemp);
 
     std::cout << "Period interval: " << left << ' ' << right << std::endl;
     std::cout << "Particles amount: " << width << 'x' << height << std::endl;
@@ -47,7 +46,7 @@ int main()
 
     double   b                 = 0;
     unsigned numOfIter         = 5000;
-    unsigned averagingSteps      = 500;
+    unsigned averagingSteps    = 1000;
     unsigned numOfIterDuration = numOfIter - averagingSteps;
 
     // std::vector<double> temprature(numOfSteps);
@@ -68,13 +67,17 @@ int main()
 
         for (auto j = 0; j < numOfExperimentsPerStep; ++j)
         {
+            auto temp = 10 + 300 * j / numOfExperimentsPerStep;
+            m.SetTemperature(temp);
             m.SetInitialConditions(width, height, period);
 
             m.Process(numOfIterDuration);
-            m.GetKineticEnergySum();
+            // m.GetKineticEnergySum();
+            m.GetMeanTemperature();
             m.Process(averagingSteps);
             
-            double temperature = m.GetKineticEnergySum() / numParticles / boltzman_constant / averagingSteps;
+            // double temperature = m.GetKineticEnergySum() / numParticles / boltzman_constant / averagingSteps;
+            double temperature = m.GetMeanTemperature();
             double loss = m.GetParticlesLoss();
             f << temperature << ' ' << loss << std::endl;
         }
